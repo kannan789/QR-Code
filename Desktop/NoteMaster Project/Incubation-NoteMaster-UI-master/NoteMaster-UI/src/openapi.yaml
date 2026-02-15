@@ -1,0 +1,508 @@
+openapi: 3.0.0
+info:
+  title: NoteMaster API
+  description: API documentation for the Vertical/Note Management application.
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000/api
+    description: Local development server
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Role:
+      type: string
+      enum: [ADMIN, USER]
+    
+    Status:
+      type: string
+      enum: [ACTIVE, INACTIVE]
+
+    NoteStatus:
+      type: string
+      enum: [PENDING, APPROVED, REJECTED]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        role:
+          $ref: '#/components/schemas/Role'
+        avatar:
+          type: string
+        assignedVerticals:
+          type: array
+          items:
+            type: string
+          description: List of Vertical IDs
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+        - id
+        - name
+        - email
+        - role
+        - status
+
+    Vertical:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        logoUrl:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+        - id
+        - name
+        - description
+        - status
+
+    Subtitle:
+      type: object
+      properties:
+        id:
+          type: string
+        verticalId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          $ref: '#/components/schemas/Status'
+      required:
+        - id
+        - verticalId
+        - name
+        - description
+        - status
+
+    Note:
+      type: object
+      properties:
+        id:
+          type: string
+        verticalId:
+          type: string
+        subtitleId:
+          type: string
+        authorId:
+          type: string
+        question:
+          type: string
+        answer:
+          type: string
+        companyName:
+          type: string
+        status:
+          $ref: '#/components/schemas/NoteStatus'
+        createdAt:
+          type: string
+          format: date-time
+        tags:
+          type: array
+          items:
+            type: string
+      required:
+        - id
+        - verticalId
+        - subtitleId
+        - authorId
+        - question
+        - answer
+        - status
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/login:
+    post:
+      summary: Login user
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                role:
+                  $ref: '#/components/schemas/Role'
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users:
+    get:
+      summary: List all users
+      tags: [Users]
+      responses:
+        '200':
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+    post:
+      summary: Create a new user
+      tags: [Users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '201':
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+
+  /users/{id}:
+    get:
+      summary: Get user by ID
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    put:
+      summary: Update user
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+      responses:
+        '200':
+          description: User updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+    delete:
+      summary: Delete user
+      tags: [Users]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: User deleted
+
+  /verticals:
+    get:
+      summary: List all verticals
+      tags: [Verticals]
+      responses:
+        '200':
+          description: List of verticals
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Vertical'
+    post:
+      summary: Create a new vertical
+      tags: [Verticals]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vertical'
+      responses:
+        '201':
+          description: Vertical created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vertical'
+
+  /verticals/{id}:
+    get:
+      summary: Get vertical by ID
+      tags: [Verticals]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Vertical found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vertical'
+    put:
+      summary: Update vertical
+      tags: [Verticals]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Vertical'
+      responses:
+        '200':
+          description: Vertical updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Vertical'
+    delete:
+      summary: Delete vertical
+      tags: [Verticals]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Vertical deleted
+
+  /subtitles:
+    get:
+      summary: List all subtitles
+      tags: [Subtitles]
+      parameters:
+        - in: query
+          name: verticalId
+          schema:
+            type: string
+          description: Filter by Vertical ID
+      responses:
+        '200':
+          description: List of subtitles
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subtitle'
+    post:
+      summary: Create a new subtitle
+      tags: [Subtitles]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subtitle'
+      responses:
+        '201':
+          description: Subtitle created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subtitle'
+
+  /subtitles/{id}:
+    put:
+      summary: Update subtitle
+      tags: [Subtitles]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Subtitle'
+      responses:
+        '200':
+          description: Subtitle updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subtitle'
+    delete:
+      summary: Delete subtitle
+      tags: [Subtitles]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Subtitle deleted
+
+  /notes:
+    get:
+      summary: List all notes
+      tags: [Notes]
+      parameters:
+        - in: query
+          name: verticalId
+          schema:
+            type: string
+        - in: query
+          name: subtitleId
+          schema:
+            type: string
+        - in: query
+          name: status
+          schema:
+            $ref: '#/components/schemas/NoteStatus'
+      responses:
+        '200':
+          description: List of notes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Note'
+    post:
+      summary: Create a new note
+      tags: [Notes]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+      responses:
+        '201':
+          description: Note created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+
+  /notes/{id}:
+    put:
+      summary: Update note
+      tags: [Notes]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Note'
+      responses:
+        '200':
+          description: Note updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+    delete:
+      summary: Delete note
+      tags: [Notes]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '204':
+          description: Note deleted
+
+  /notes/{id}/approve:
+    post:
+      summary: Approve a note
+      tags: [Notes]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Note approved
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
+
+  /notes/{id}/reject:
+    post:
+      summary: Reject a note
+      tags: [Notes]
+      parameters:
+        - in: path
+          name: id
+          schema:
+            type: string
+          required: true
+      responses:
+        '200':
+          description: Note rejected
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Note'
